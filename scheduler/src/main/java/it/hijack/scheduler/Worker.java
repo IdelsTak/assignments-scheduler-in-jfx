@@ -6,7 +6,7 @@ public class Worker {
 
 	private String name;
 	
-	private Color color = Color.YELLOW;
+	private Color color = Color.RED;
 	
 	public Worker(String name) {
 		this.name = name;
