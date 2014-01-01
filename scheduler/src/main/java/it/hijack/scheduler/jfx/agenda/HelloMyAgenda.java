@@ -28,7 +28,8 @@ public class HelloMyAgenda extends Application {
 		final Timetable timetable = new Timetable();
 		final Activity office = new Activity("office", new Customer("coop"));
 		
-		final ComboBox<Worker> workers = createComboBox();
+		final ComboBox<Worker> workers = createWorkersComboBox();
+		final ComboBox<String> days = createDaysComboBox();
 
 		VBox vbox = new VBox();
 		Group group = new Group();
@@ -39,6 +40,7 @@ public class HelloMyAgenda extends Application {
 
 		HBox hbox = new HBox();
 		hbox.getChildren().add(workers);
+		hbox.getChildren().add(days);
 		hbox.getChildren().add(btn);
 		hbox.getChildren().add(resetButton);
 
@@ -50,7 +52,7 @@ public class HelloMyAgenda extends Application {
 			@Override
 			public void handle(ActionEvent arg0) {
 				System.out.println("adding one appointment");
-				timetable.assign(office).to(workers.getValue()).from(startHour).to(startHour + 2);
+				timetable.assign(office).to(workers.getValue()).from(startHour).to(startHour + 2).on(WeekDays.valueOf(days.getValue()));
 				agenda.refresh();
 				startHour += 3;
 			}
@@ -73,11 +75,20 @@ public class HelloMyAgenda extends Application {
 		stage.show();
 	}
 
-	private ComboBox<Worker> createComboBox() {
+	private ComboBox<Worker> createWorkersComboBox() {
 		ObservableList<Worker> workers = FXCollections.observableArrayList(new Worker("Mario"), new Worker("Luigi"));
 		ComboBox<Worker> comboBox = new ComboBox<Worker>(workers);
 		comboBox.setValue(workers.get(0));
 
+		return comboBox;
+	}
+
+	private ComboBox<String> createDaysComboBox() {
+		ComboBox<String> comboBox = new ComboBox<String>();
+		for(WeekDays dayOfWeek : WeekDays.values())
+			comboBox.getItems().add(dayOfWeek.name());
+		comboBox.setValue(WeekDays.MONDAY.name());
+		
 		return comboBox;
 	}
 

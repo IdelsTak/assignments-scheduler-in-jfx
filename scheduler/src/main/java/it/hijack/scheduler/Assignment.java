@@ -1,11 +1,16 @@
 package it.hijack.scheduler;
 
+import it.hijack.scheduler.jfx.agenda.WeekDays;
+
+import java.util.Calendar;
+
 public class Assignment {
 
 	private Activity activity;
 	private Worker worker;
 	private int startHour;
 	private int stopHour;
+	private WeekDays dayOfWeek = WeekDays.MONDAY;
 
 	public Assignment(Activity activity) {
 		this.setActivity(activity);
@@ -60,5 +65,14 @@ public class Assignment {
 
 	public int getTotalHours() {
 		return stopHour - startHour;
+	}
+
+	public Assignment on(WeekDays dayOfWeek) {
+		this.dayOfWeek = dayOfWeek;
+		return this;
+	}
+
+	public WeekDays getDayOfWeek() {
+		return dayOfWeek;
 	}
 }

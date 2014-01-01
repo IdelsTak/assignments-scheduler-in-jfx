@@ -75,28 +75,29 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	private void construct() {
 		Set<Assignment> assignments = getSkinnable().getTimetable().getAssignments();
 		for(Assignment assignment : assignments) {
-			drawRectangle(assignment);
+			drawRectangleFor(assignment);
 		}
 	}
 	
 	List<Region> stacks = new ArrayList<>();
 	
-	private void drawRectangle(Assignment assignment) {
+	private void drawRectangleFor(Assignment assignment) {
 		Rectangle rectangle = new Rectangle();
 		rectangle.setWidth(cellWidth-2);
 		
 		int totalHeight = assignment.getTotalHours() * cellHeight - 2;
 		rectangle.setHeight(totalHeight);
-		
 		rectangle.setFill(assignment.getWorker().getColor());
 		rectangle.setArcHeight(6);
 		rectangle.setArcWidth(6);
 		rectangle.setStroke(null);
 
 		StackPane stack = new StackPane();
-		stack.setLayoutX(0 + 1);
+		int dayOfWeek = assignment.getDayOfWeek().getIndex(); // MONDAY is 0
+		
+		stack.setLayoutX(dayOfWeek * cellWidth + 2);
 		int startingHourIndex = assignment.getStartHour() - 8;
-		stack.setLayoutY(startingHourIndex * cellHeight + 1);
+		stack.setLayoutY(startingHourIndex * cellHeight + 2);
 		
 		Label lbl = new Label(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
 		stack.getChildren().add(rectangle);
@@ -178,8 +179,11 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 				System.out.println("ORIGIN: " + dashedRectangleStartY);
 
-				dashedRectangle = new Rectangle(dashedRectangleStartX + 1, dashedRectangleStartY + 1, cellWidth - 2,
-						cellHeight - 2);
+				dashedRectangle = new Rectangle();
+				dashedRectangle.setX(dashedRectangleStartX + 2);
+				dashedRectangle.setY(dashedRectangleStartY + 2);
+				dashedRectangle.setWidth(cellWidth - 2);
+				dashedRectangle.setHeight(cellHeight - 2);
 				dashedRectangle.setFill(Color.ORANGE);
 				dashedRectangle.setArcHeight(6);
 				dashedRectangle.setArcWidth(6);
@@ -218,15 +222,17 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 			public void handle(MouseEvent event) {
 				// System.out.println("mouse released");
 				
+				int dayOfWeekIndex = (int) Math.ceil(dashedRectangleStartX / cellWidth);
 				int startingHour = (int) Math.ceil(dashedRectangleStartY / cellHeight) + 8;
 				int cells = (int) Math.ceil(dashedRectangle.getHeight() / cellHeight);
 				
+				WeekDays dayOfWeek = WeekDays.fromIndex(dayOfWeekIndex);
 				setCursor(Cursor.DEFAULT);
 				dragPane.getChildren().remove(dashedRectangle);
 				dashedRectangle = null;
 				event.consume();
 				
-				getSkinnable().getTimetable().assign(new Activity("test")).to(new Worker("john")).from(startingHour).to(startingHour + cells);
+				getSkinnable().getTimetable().assign(new Activity("test")).to(new Worker("john")).from(startingHour).to(startingHour + cells).on(dayOfWeek);
 				refresh();
 			}
 		});

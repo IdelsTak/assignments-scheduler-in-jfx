@@ -2,7 +2,11 @@ package it.hijack.scheduler;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import it.hijack.scheduler.jfx.agenda.WeekDays;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Set;
 
 import org.junit.Test;
@@ -53,6 +57,16 @@ public class TestCase {
 		assertThat(assignment.getWorker(), is(arianna));
 		assertThat(assignment.getStartHour(), is(8));
 		assertThat(assignment.getStopHour(), is(9));
+	}
+	
+	@Test
+	public void canSpecifyTheDayOfAnAssignment() throws Exception {
+		Activity office = new Activity("ufficio", new Customer("cooperativa"));
+		
+		Timetable timetable = new Timetable();
+		Assignment assignment = timetable.assign(office).on(WeekDays.TUESDAY);
+		
+		assertThat(assignment.getDayOfWeek(), is(WeekDays.TUESDAY));
 	}
 	
 	@Test
