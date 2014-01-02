@@ -2,7 +2,6 @@ package it.hijack.scheduler;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import it.hijack.scheduler.jfx.agenda.WeekDays;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -64,9 +63,9 @@ public class TestCase {
 		Activity office = new Activity("ufficio", new Customer("cooperativa"));
 		
 		Timetable timetable = new Timetable();
-		Assignment assignment = timetable.assign(office).on(WeekDays.TUESDAY);
+		Assignment assignment = timetable.assign(office).on(DayOfWeek.TUESDAY);
 		
-		assertThat(assignment.getDayOfWeek(), is(WeekDays.TUESDAY));
+		assertThat(assignment.getDayOfWeek(), is(DayOfWeek.TUESDAY));
 	}
 	
 	@Test

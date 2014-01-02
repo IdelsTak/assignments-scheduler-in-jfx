@@ -2,6 +2,7 @@ package it.hijack.scheduler.jfx.agenda;
 
 import it.hijack.scheduler.Activity;
 import it.hijack.scheduler.Assignment;
+import it.hijack.scheduler.DayOfWeek;
 import it.hijack.scheduler.Worker;
 
 import java.text.DecimalFormat;
@@ -233,7 +234,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 				int startingHour = (int) Math.ceil(dashedRectangleStartY / cellHeight) + 8;
 				int cells = (int) Math.ceil(dashedRectangle.getHeight() / cellHeight);
 
-				WeekDays dayOfWeek = WeekDays.fromIndex(dayOfWeekIndex);
+				DayOfWeek dayOfWeek = DayOfWeek.fromIndex(dayOfWeekIndex);
 				setCursor(Cursor.DEFAULT);
 				dragPane.getChildren().remove(dashedRectangle);
 				dashedRectangle = null;
@@ -255,7 +256,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 		header.getChildren().add(rect);
 
-		for (WeekDays day : WeekDays.values()) {
+		for (DayOfWeek day : DayOfWeek.values()) {
 			Label label = createWeekDayLabel(day.name());
 			header.getChildren().add(label);
 		}

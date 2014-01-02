@@ -49,7 +49,6 @@ public class GridPaneTest extends Application {
 	}
 	
 	private Region buildGridCell(String title) {
-		StackPane stack = new StackPane();
 		VBox box = new VBox();
 		box.setFillWidth(true);
 		box.setStyle("-fx-background-color: #336699;");
