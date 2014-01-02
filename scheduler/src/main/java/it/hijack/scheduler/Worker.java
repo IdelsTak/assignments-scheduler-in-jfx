@@ -32,9 +32,9 @@ public class Worker {
 
 	private Color getRandom() {
 		Random rnd = new Random();
-		int r = rnd.nextInt(256);
-		int g = rnd.nextInt(256);
-		int b = rnd.nextInt(256);
+		int r = rnd.nextInt(100) + 155;
+		int g = rnd.nextInt(100) + 155;
+		int b = rnd.nextInt(100) + 155;
 		return Color.rgb(r, g, b);
 	}
 }
