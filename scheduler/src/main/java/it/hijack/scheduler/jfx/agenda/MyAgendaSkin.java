@@ -61,30 +61,37 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 		super.layoutChildren();
 	}
-	
+
 	public void refresh() {
 		reset();
 		construct();
 	}
-	
+
 	private void reset() {
 		dragPane.getChildren().removeAll(stacks);
 		stacks.clear();
 	}
 
 	private void construct() {
-		Set<Assignment> assignments = getSkinnable().getTimetable().getAssignments();
-		for(Assignment assignment : assignments) {
+		Set<Assignment> assignments;
+		WorkerFilter filter = getSkinnable().getWorkerFilter();
+		if (filter.showAll()) {
+			assignments = getSkinnable().getTimetable().getAssignments();
+		} else {
+			assignments = getSkinnable().getTimetable().getAssignmentsOf(filter.getWorker());
+		}
+
+		for (Assignment assignment : assignments) {
 			drawRectangleFor(assignment);
 		}
 	}
-	
+
 	List<Region> stacks = new ArrayList<>();
-	
+
 	private void drawRectangleFor(Assignment assignment) {
 		Rectangle rectangle = new Rectangle();
-		rectangle.setWidth(cellWidth-2);
-		
+		rectangle.setWidth(cellWidth - 2);
+
 		int totalHeight = assignment.getTotalHours() * cellHeight - 2;
 		rectangle.setHeight(totalHeight);
 		rectangle.setFill(assignment.getWorker().getColor());
@@ -94,19 +101,19 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 		StackPane stack = new StackPane();
 		int dayOfWeek = assignment.getDayOfWeek().getIndex(); // MONDAY is 0
-		
+
 		stack.setLayoutX(dayOfWeek * cellWidth + 2);
 		int startingHourIndex = assignment.getStartHour() - 8;
 		stack.setLayoutY(startingHourIndex * cellHeight + 2);
-		
+
 		Label lbl = new Label(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
 		stack.getChildren().add(rectangle);
 		stack.getChildren().add(lbl);
 		dragPane.getChildren().add(stack);
-		
+
 		stacks.add(stack);
 	}
-	
+
 	private void drawControl() {
 		System.out.println("drawControl()");
 
@@ -221,18 +228,21 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 			@Override
 			public void handle(MouseEvent event) {
 				// System.out.println("mouse released");
-				
+
 				int dayOfWeekIndex = (int) Math.ceil(dashedRectangleStartX / cellWidth);
 				int startingHour = (int) Math.ceil(dashedRectangleStartY / cellHeight) + 8;
 				int cells = (int) Math.ceil(dashedRectangle.getHeight() / cellHeight);
-				
+
 				WeekDays dayOfWeek = WeekDays.fromIndex(dayOfWeekIndex);
 				setCursor(Cursor.DEFAULT);
 				dragPane.getChildren().remove(dashedRectangle);
 				dashedRectangle = null;
 				event.consume();
-				
-				getSkinnable().getTimetable().assign(new Activity("test")).to(new Worker("john")).from(startingHour).to(startingHour + cells).on(dayOfWeek);
+
+				Worker worker = getSkinnable().getDefaultWorker();
+
+				getSkinnable().getTimetable().assign(new Activity("test")).to(worker).from(startingHour).to(startingHour + cells)
+						.on(dayOfWeek);
 				refresh();
 			}
 		});
