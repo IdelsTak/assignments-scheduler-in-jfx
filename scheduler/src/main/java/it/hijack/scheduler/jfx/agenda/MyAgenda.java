@@ -1,5 +1,6 @@
 package it.hijack.scheduler.jfx.agenda;
 
+import it.hijack.scheduler.Activity;
 import it.hijack.scheduler.Timetable;
 import it.hijack.scheduler.Worker;
 import javafx.scene.control.Control;
@@ -8,6 +9,7 @@ public class MyAgenda extends Control {
 
 	final private Timetable timetable;
 	private Worker worker;
+	private Activity activity;
 	private WorkerFilter filter;
 	
 	public MyAgenda(Timetable timetable) {
@@ -29,12 +31,20 @@ public class MyAgenda extends Control {
 		skin.refresh();
 	}
 
-	public void setDefaultWorker(Worker worker) {
+	public void setWorkerInCreation(Worker worker) {
 		this.worker = worker;
 	}
 	
-	public Worker getDefaultWorker() {
+	public Worker getWorkerInCreation() {
 		return worker;
+	}
+	
+	public void setActivityInCreation(Activity activity) {
+		this.activity = activity;
+	}
+	
+	public Activity getActivityInCreation() {
+		return activity;
 	}
 
 	public void setFilter(WorkerFilter workerFilter) {

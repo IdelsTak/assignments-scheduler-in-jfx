@@ -25,4 +25,8 @@ public class Activity {
 	public Customer getCustomer() {
 		return owner;
 	}
+	
+	public String toString() {
+		return name;
+	}
 }

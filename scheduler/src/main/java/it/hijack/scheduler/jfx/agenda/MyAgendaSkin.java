@@ -101,6 +101,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		rectangle.setStroke(null);
 
 		StackPane stack = new StackPane();
+		stack.setMaxWidth(cellWidth - 2);
 		int dayOfWeek = assignment.getDayOfWeek().getIndex(); // MONDAY is 0
 
 		stack.setLayoutX(dayOfWeek * cellWidth + 2);
@@ -174,8 +175,6 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		dragPane.setOnMousePressed(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
-				// System.out.println("mouse pressed");
-
 				double verticalTicks = evt.getY() / cellHeight;
 				double flooredVerticalTicks = Math.floor(verticalTicks);
 
@@ -240,9 +239,9 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 				dashedRectangle = null;
 				event.consume();
 
-				Worker worker = getSkinnable().getDefaultWorker();
-
-				getSkinnable().getTimetable().assign(new Activity("test")).to(worker).from(startingHour).to(startingHour + cells)
+				Worker worker = getSkinnable().getWorkerInCreation();
+				Activity activity = getSkinnable().getActivityInCreation();
+				getSkinnable().getTimetable().assign(activity).to(worker).from(startingHour).to(startingHour + cells)
 						.on(dayOfWeek);
 				refresh();
 			}

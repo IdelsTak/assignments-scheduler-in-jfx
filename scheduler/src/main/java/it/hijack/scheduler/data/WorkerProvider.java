@@ -5,11 +5,11 @@ import it.hijack.scheduler.Worker;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkersProvider {
+public class WorkerProvider {
 	
 	private List<Worker> workers = new ArrayList<Worker>();
 
-	public WorkersProvider() {
+	public WorkerProvider() {
 		workers.add(new Worker("Mario"));
 		workers.add(new Worker("Luigi"));
 		workers.add(new Worker("Giovanna"));

@@ -1,8 +1,10 @@
 package it.hijack.scheduler.jfx.agenda;
 
+import it.hijack.scheduler.Activity;
 import it.hijack.scheduler.Timetable;
 import it.hijack.scheduler.Worker;
-import it.hijack.scheduler.data.WorkersProvider;
+import it.hijack.scheduler.data.ActivityProvider;
+import it.hijack.scheduler.data.WorkerProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,24 +28,28 @@ import javafx.stage.StageStyle;
 
 public class HelloMyAgenda extends Application {
 
-	private WorkersProvider workers = new WorkersProvider();
+	private WorkerProvider workers = new WorkerProvider();
+	private ActivityProvider activities = new ActivityProvider();
 	final Timetable timetable = new Timetable();
 	final MyAgenda agenda = new MyAgenda(timetable);
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		agenda.setDefaultWorker(workers.getAll().get(0));
+		agenda.setWorkerInCreation(workers.getAll().get(0));
+		agenda.setActivityInCreation(activities.getAll().get(0));
 		agenda.setFilter(WorkerFilter.getShowAllFilter());
 
 		VBox vbox = new VBox();
 		Group group = new Group();
 
 		Button resetButton = new Button("reset");
-		final ComboBox<Worker> workersComboBox = createWorkersComboBox(workers);
+		final ComboBox<Worker> workersComboBox = createWorkersComboBox();
+		final ComboBox<Activity> activitiesComboBox = createActivitiesComboBox();
 
 		HBox hbox = new HBox();
 		hbox.setSpacing(4);
 		hbox.getChildren().add(workersComboBox);
+		hbox.getChildren().add(activitiesComboBox);
 		hbox.getChildren().add(resetButton);
 		hbox.getChildren().addAll(createWorkerFilter());
 
@@ -67,7 +73,7 @@ public class HelloMyAgenda extends Application {
 		stage.show();
 	}
 
-	private ComboBox<Worker> createWorkersComboBox(WorkersProvider workers) {
+	private ComboBox<Worker> createWorkersComboBox() {
 		ComboBox<Worker> comboBox = new ComboBox<Worker>();
 		comboBox.getItems().addAll(workers.getAll());
 		comboBox.setValue(comboBox.getItems().get(0));
@@ -75,10 +81,25 @@ public class HelloMyAgenda extends Application {
 		comboBox.valueProperty().addListener(new ChangeListener<Worker>() {
 			@Override
 			public void changed(ObservableValue<? extends Worker> arg0, Worker old, Worker worker) {
-				agenda.setDefaultWorker(worker);
+				agenda.setWorkerInCreation(worker);
 			}
 		});
 
+		return comboBox;
+	}
+	
+	private ComboBox<Activity> createActivitiesComboBox() {
+		ComboBox<Activity> comboBox = new ComboBox<Activity>();
+		comboBox.getItems().addAll(activities.getAll());
+		comboBox.setValue(comboBox.getItems().get(0));
+		
+		comboBox.valueProperty().addListener(new ChangeListener<Activity>() {
+			@Override
+			public void changed(ObservableValue<? extends Activity> arg0, Activity old, Activity newValue) {
+				agenda.setActivityInCreation(newValue);
+			}
+		});
+		
 		return comboBox;
 	}
 
