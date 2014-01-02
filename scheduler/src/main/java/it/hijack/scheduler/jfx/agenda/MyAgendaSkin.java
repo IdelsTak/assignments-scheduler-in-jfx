@@ -7,7 +7,9 @@ import it.hijack.scheduler.Worker;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javafx.event.EventHandler;
@@ -15,6 +17,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -48,13 +51,15 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	public MyAgendaSkin(MyAgenda control) {
 		super(control, new MyAgendaBehavior(control));
 		this.control = control;
+		createNewAssignment(8, 2, DayOfWeek.MONDAY);
 		drawControl();
 		this.isDirty = false;
+		
 	}
 
 	@Override
 	protected void layoutChildren() {
-		System.out.println("layoutChildren()");
+		//System.out.println("layoutChildren()");
 		if (!isDirty)
 			return;
 
@@ -69,7 +74,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	}
 
 	private void reset() {
-		dragPane.getChildren().removeAll(stacks);
+		dragPane.getChildren().removeAll(stacks.keySet());
 		stacks.clear();
 	}
 
@@ -87,7 +92,8 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		}
 	}
 
-	List<Region> stacks = new ArrayList<>();
+	private Map<StackPane, Assignment> stacks = new HashMap<>();
+	private StackPane selectedStackPane;
 
 	private void drawRectangleFor(Assignment assignment) {
 		Rectangle rectangle = new Rectangle();
@@ -111,9 +117,41 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		Label lbl = new Label(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
 		stack.getChildren().add(rectangle);
 		stack.getChildren().add(lbl);
-		dragPane.getChildren().add(stack);
+		Tooltip.install(stack, createToltipFor(assignment));
 
-		stacks.add(stack);
+		stack.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent evt) {
+				System.out.println("PRESSED -------------");
+				selectedStackPane = (StackPane) evt.getSource();
+				evt.consume();
+			}
+		});		
+		
+		stack.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent evt) {
+				System.out.println("RELEASED -------------");
+				Rectangle r = (Rectangle) selectedStackPane.getChildren().get(0);
+				r.setStroke(Color.RED);
+			}
+		});		
+
+		stack.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent evt) {
+				evt.consume();
+			}
+		});		
+		
+		dragPane.getChildren().add(stack);
+		stacks.put(stack, assignment);
+	}
+
+	private Tooltip createToltipFor(Assignment assignment) {
+		Tooltip t = new Tooltip();
+		t.setText(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
+		return t;
 	}
 
 	private void drawControl() {
@@ -175,6 +213,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		dragPane.setOnMousePressed(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
+				System.out.println("pressed");
 				double verticalTicks = evt.getY() / cellHeight;
 				double flooredVerticalTicks = Math.floor(verticalTicks);
 
@@ -184,7 +223,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 				dashedRectangleStartX = flooredHorizontalTicks * cellWidth;
 				dashedRectangleStartY = flooredVerticalTicks * cellHeight;
 
-				System.out.println("ORIGIN: " + dashedRectangleStartY);
+				// System.out.println("ORIGIN: " + dashedRectangleStartY);
 
 				dashedRectangle = new Rectangle();
 				dashedRectangle.setX(dashedRectangleStartX + 2);
@@ -202,17 +241,12 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		dragPane.setOnMouseDragged(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
-				// System.out.println("mouse dragged");
-				// setCursor(Cursor.V_RESIZE);
-
-				System.out.println(evt.getX() + ", " + evt.getY());
+				// System.out.println(evt.getX() + ", " + evt.getY());
 				if (evt.getY() <= dashedRectangleStartY) {
-					System.out.println("PRIMA");
 					return;
 				}
 
 				if (evt.getY() >= (cellHeight * gridRows)) {
-					System.out.println("Oltre");
 					return;
 				}
 
@@ -226,9 +260,8 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 		dragPane.setOnMouseReleased(new EventHandler<MouseEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
-				// System.out.println("mouse released");
-
+			public void handle(MouseEvent evt) {
+				System.out.println("released");
 				int dayOfWeekIndex = (int) Math.ceil(dashedRectangleStartX / cellWidth);
 				int startingHour = (int) Math.ceil(dashedRectangleStartY / cellHeight) + 8;
 				int cells = (int) Math.ceil(dashedRectangle.getHeight() / cellHeight);
@@ -237,15 +270,18 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 				setCursor(Cursor.DEFAULT);
 				dragPane.getChildren().remove(dashedRectangle);
 				dashedRectangle = null;
-				event.consume();
 
-				Worker worker = getSkinnable().getWorkerInCreation();
-				Activity activity = getSkinnable().getActivityInCreation();
-				getSkinnable().getTimetable().assign(activity).to(worker).from(startingHour).to(startingHour + cells)
-						.on(dayOfWeek);
+				createNewAssignment(startingHour, cells, dayOfWeek);
 				refresh();
 			}
 		});
+	}
+	
+	private void createNewAssignment(int startHour, int hours, DayOfWeek dayOfWeek) {
+		Worker worker = getSkinnable().getWorkerInCreation();
+		Activity activity = getSkinnable().getActivityInCreation();
+		getSkinnable().getTimetable().assign(activity).to(worker).from(startHour).to(startHour + hours)
+		.on(dayOfWeek);
 	}
 
 	private Region createWeekHeader(Region hoursColumn) {
