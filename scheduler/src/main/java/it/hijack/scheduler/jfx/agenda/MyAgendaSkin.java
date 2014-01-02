@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableObjectValue;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -48,18 +54,19 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	private double dashedRectangleStartX;
 	private double dashedRectangleStartY;
 
+	private ObjectProperty<StackPane> selectedStackPane = new SimpleObjectProperty<StackPane>();
+
 	public MyAgendaSkin(MyAgenda control) {
 		super(control, new MyAgendaBehavior(control));
 		this.control = control;
 		createNewAssignment(8, 2, DayOfWeek.MONDAY);
 		drawControl();
 		this.isDirty = false;
-		
 	}
 
 	@Override
 	protected void layoutChildren() {
-		//System.out.println("layoutChildren()");
+		// System.out.println("layoutChildren()");
 		if (!isDirty)
 			return;
 
@@ -93,7 +100,6 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	}
 
 	private Map<StackPane, Assignment> stacks = new HashMap<>();
-	private StackPane selectedStackPane;
 
 	private void drawRectangleFor(Assignment assignment) {
 		Rectangle rectangle = new Rectangle();
@@ -119,31 +125,33 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		stack.getChildren().add(lbl);
 		Tooltip.install(stack, createToltipFor(assignment));
 
-		stack.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent evt) {
-				System.out.println("PRESSED -------------");
-				selectedStackPane = (StackPane) evt.getSource();
-				evt.consume();
-			}
-		});		
-		
+		// stack.addEventHandler(MouseEvent.MOUSE_PRESSED, new
+		// EventHandler<MouseEvent>() {
+		// @Override
+		// public void handle(MouseEvent evt) {
+		// selectedStackPane.set((StackPane) evt.getSource());
+		// evt.consume();
+		// }
+		// });
+
 		stack.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
-				System.out.println("RELEASED -------------");
-				Rectangle r = (Rectangle) selectedStackPane.getChildren().get(0);
-				r.setStroke(Color.RED);
+				if (((StackPane) evt.getSource()).contains(evt.getX(), evt.getY())) {
+					selectedStackPane.set((StackPane) evt.getSource());
+					Rectangle r = (Rectangle) selectedStackPane.get().getChildren().get(0);
+					r.setStroke(Color.RED);
+				}
 			}
-		});		
+		});
 
 		stack.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
 				evt.consume();
 			}
-		});		
-		
+		});
+
 		dragPane.getChildren().add(stack);
 		stacks.put(stack, assignment);
 	}
@@ -181,8 +189,20 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 
 		addSelectionCapability();
 
+		configureStackSelectionBehaviour();
+
 		getChildren().clear();
 		getChildren().addAll(container);
+	}
+
+	private void configureStackSelectionBehaviour() {
+		selectedStackPane.addListener(new ChangeListener<StackPane>() {
+			@Override
+			public void changed(ObservableValue<? extends StackPane> arg0, StackPane old, StackPane newValue) {
+				if (old != null)
+					((Rectangle) old.getChildren().get(0)).setStroke(null);
+			}
+		});
 	}
 
 	private Region createGrid(int columns, int rows) {
@@ -276,12 +296,11 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 			}
 		});
 	}
-	
+
 	private void createNewAssignment(int startHour, int hours, DayOfWeek dayOfWeek) {
 		Worker worker = getSkinnable().getWorkerInCreation();
 		Activity activity = getSkinnable().getActivityInCreation();
-		getSkinnable().getTimetable().assign(activity).to(worker).from(startHour).to(startHour + hours)
-		.on(dayOfWeek);
+		getSkinnable().getTimetable().assign(activity).to(worker).from(startHour).to(startHour + hours).on(dayOfWeek);
 	}
 
 	private Region createWeekHeader(Region hoursColumn) {
