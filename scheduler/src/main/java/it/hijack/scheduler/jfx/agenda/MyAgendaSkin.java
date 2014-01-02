@@ -6,18 +6,14 @@ import it.hijack.scheduler.DayOfWeek;
 import it.hijack.scheduler.Worker;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableObjectValue;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -125,15 +121,6 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		stack.getChildren().add(lbl);
 		Tooltip.install(stack, createToltipFor(assignment));
 
-		// stack.addEventHandler(MouseEvent.MOUSE_PRESSED, new
-		// EventHandler<MouseEvent>() {
-		// @Override
-		// public void handle(MouseEvent evt) {
-		// selectedStackPane.set((StackPane) evt.getSource());
-		// evt.consume();
-		// }
-		// });
-
 		stack.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent evt) {
@@ -141,6 +128,9 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 					selectedStackPane.set((StackPane) evt.getSource());
 					Rectangle r = (Rectangle) selectedStackPane.get().getChildren().get(0);
 					r.setStroke(Color.RED);
+					
+					Assignment ass = stacks.get(selectedStackPane.get());
+					getSkinnable().setSelectedAssignment(ass);
 				}
 			}
 		});

@@ -1,6 +1,7 @@
 package it.hijack.scheduler.jfx.agenda;
 
 import it.hijack.scheduler.Activity;
+import it.hijack.scheduler.Assignment;
 import it.hijack.scheduler.Timetable;
 import it.hijack.scheduler.Worker;
 import it.hijack.scheduler.data.ActivityProvider;
@@ -43,6 +44,7 @@ public class HelloMyAgenda extends Application {
 		Group group = new Group();
 
 		Button resetButton = new Button("reset");
+		Button deleteButton = new Button("delete selected");
 		final ComboBox<Worker> workersComboBox = createWorkersComboBox();
 		final ComboBox<Activity> activitiesComboBox = createActivitiesComboBox();
 
@@ -51,6 +53,7 @@ public class HelloMyAgenda extends Application {
 		hbox.getChildren().add(workersComboBox);
 		hbox.getChildren().add(activitiesComboBox);
 		hbox.getChildren().add(resetButton);
+		hbox.getChildren().add(deleteButton);
 		hbox.getChildren().addAll(createWorkerFilter());
 
 		group.getChildren().add(agenda);
@@ -62,6 +65,17 @@ public class HelloMyAgenda extends Application {
 			public void handle(ActionEvent arg0) {
 				timetable.getAssignments().clear();
 				agenda.refresh();
+			}
+		});
+		
+		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				Assignment assignment = agenda.getSelectedAssignment();
+				if(assignment != null) {
+					timetable.getAssignments().remove(assignment);
+					agenda.refresh();
+				}
 			}
 		});
 
