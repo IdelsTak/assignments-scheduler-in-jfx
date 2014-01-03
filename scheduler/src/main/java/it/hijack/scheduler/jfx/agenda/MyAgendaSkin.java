@@ -6,7 +6,10 @@ import it.hijack.scheduler.DayOfWeek;
 import it.hijack.scheduler.Worker;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -89,6 +92,8 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		} else {
 			assignments = getSkinnable().getTimetable().getAssignmentsOf(filter.getWorker());
 		}
+		
+		initSlots(assignments);
 
 		for (Assignment assignment : assignments) {
 			drawRectangleFor(assignment);
@@ -98,6 +103,11 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 	private Map<StackPane, Assignment> stacks = new HashMap<>();
 
 	private void drawRectangleFor(Assignment assignment) {
+		
+		if(overlappingAssignments.contains(assignment)) {
+			System.out.println("SHOULD DRAW ONLY HALF");
+		}
+		
 		Rectangle rectangle = new Rectangle();
 		rectangle.setWidth(cellWidth - 2);
 
@@ -115,7 +125,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		stack.setLayoutX(dayOfWeek * cellWidth + 2);
 		int startingHourIndex = assignment.getStartHour() - 8;
 		stack.setLayoutY(startingHourIndex * cellHeight + 2);
-
+		
 		Label lbl = new Label(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
 		stack.getChildren().add(rectangle);
 		stack.getChildren().add(lbl);
@@ -128,7 +138,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 					selectedStackPane.set((StackPane) evt.getSource());
 					Rectangle r = (Rectangle) selectedStackPane.get().getChildren().get(0);
 					r.setStroke(Color.RED);
-					
+
 					Assignment ass = stacks.get(selectedStackPane.get());
 					getSkinnable().setSelectedAssignment(ass);
 				}
@@ -336,4 +346,58 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		return control;
 	}
 
+	private Slot[][] slots;
+	private Set<Assignment> overlappingAssignments;
+
+	private void initSlots(Set<Assignment> assignments) {
+		slots = new Slot[DayOfWeek.values().length][24];
+		for (DayOfWeek dow : DayOfWeek.values()) {
+			for (int h = 8; h < gridRows + 8; h++) {
+				Slot slot = new Slot(dow, h);
+				slots[dow.getIndex()][h] = slot;
+			}
+		}
+		
+		overlappingAssignments = new HashSet<>();
+		for(Assignment assignment : assignments) {
+			int startHour = assignment.getStartHour();
+			int totalHours = assignment.getTotalHours();
+			for (int h = startHour; h < startHour + totalHours; h++) {
+				Slot slot = slots[assignment.getDayOfWeek().getIndex()][h];
+				slot.add(assignment);
+				System.out.println("slot " + h + " has now " + slot.getAssignments().size() + " assignments");
+				
+				if(slot.getAssignments().size() > 1) {
+					overlappingAssignments.addAll(slot.getAssignments());
+				}
+			}
+		}
+	}
+
+	private static class Slot {
+		private List<Assignment> assignments = new ArrayList<>();
+		private DayOfWeek dow;
+		private int hour;
+
+		public Slot(DayOfWeek dow, int hour) {
+			this.dow = dow;
+			this.hour = hour;
+		}
+
+		public void add(Assignment assignment) {
+			assignments.add(assignment);
+		}
+
+		public List<Assignment> getAssignments() {
+			return assignments;
+		}
+
+		public DayOfWeek getDow() {
+			return dow;
+		}
+
+		public int getHour() {
+			return hour;
+		}
+	}
 }
