@@ -4,9 +4,14 @@ import it.hijack.scheduler.Activity;
 import it.hijack.scheduler.Assignment;
 import it.hijack.scheduler.DayOfWeek;
 import it.hijack.scheduler.Worker;
+import it.hijack.scheduler.jfx.agenda.Filters.Predicate;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -92,22 +97,47 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		} else {
 			assignments = getSkinnable().getTimetable().getAssignmentsOf(filter.getWorker());
 		}
-		
+
 		initSlots(assignments);
+
+		for (DayOfWeek dow : DayOfWeek.values()) {
+			Collection<Assignment> dailyAssignments = Filters.getDailyAssignments(assignments, dow);
+			createDailyRectangles(dailyAssignments, dow);
+		}
 
 		for (Assignment assignment : assignments) {
 			drawRectangleFor(assignment);
 		}
 	}
 
+	private void createDailyRectangles(Collection<Assignment> assignments, DayOfWeek dayOfWeek) {
+		int workers = countDifferentWorkers(assignments);
+		if (workers > 1) {
+			System.out.println(dayOfWeek + " has " + workers + " different workers!!");
+		}
+		
+		List<Assignment> list = new ArrayList<>(assignments);
+		Collections.sort(list, new Comparator<Assignment>(){
+			@Override
+			public int compare(Assignment o1, Assignment o2) {
+				return o1.getWorker().getName().compareTo(o2.getWorker().getName());
+			}
+		});
+		
+		HashMap<Worker, List<Rectangle>> workersRectangles = new HashMap<>();
+	}
+
+	private int countDifferentWorkers(Collection<Assignment> assignments) {
+		Set<Worker> workers = new HashSet<Worker>();
+		for (Assignment a : assignments) {
+			workers.add(a.getWorker());
+		}
+		return workers.size();
+	}
+
 	private Map<StackPane, Assignment> stacks = new HashMap<>();
 
 	private void drawRectangleFor(Assignment assignment) {
-		
-		if(overlappingAssignments.contains(assignment)) {
-			System.out.println("SHOULD DRAW ONLY HALF");
-		}
-		
 		Rectangle rectangle = new Rectangle();
 		rectangle.setWidth(cellWidth - 2);
 
@@ -125,7 +155,7 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 		stack.setLayoutX(dayOfWeek * cellWidth + 2);
 		int startingHourIndex = assignment.getStartHour() - 8;
 		stack.setLayoutY(startingHourIndex * cellHeight + 2);
-		
+
 		Label lbl = new Label(assignment.getActivity().getName() + " - " + assignment.getWorker().getName());
 		stack.getChildren().add(rectangle);
 		stack.getChildren().add(lbl);
@@ -357,17 +387,15 @@ public class MyAgendaSkin extends SkinBase<MyAgenda, MyAgendaBehavior> {
 				slots[dow.getIndex()][h] = slot;
 			}
 		}
-		
+
 		overlappingAssignments = new HashSet<>();
-		for(Assignment assignment : assignments) {
+		for (Assignment assignment : assignments) {
 			int startHour = assignment.getStartHour();
 			int totalHours = assignment.getTotalHours();
 			for (int h = startHour; h < startHour + totalHours; h++) {
 				Slot slot = slots[assignment.getDayOfWeek().getIndex()][h];
 				slot.add(assignment);
-				System.out.println("slot " + h + " has now " + slot.getAssignments().size() + " assignments");
-				
-				if(slot.getAssignments().size() > 1) {
+				if (slot.getAssignments().size() > 1) {
 					overlappingAssignments.addAll(slot.getAssignments());
 				}
 			}
