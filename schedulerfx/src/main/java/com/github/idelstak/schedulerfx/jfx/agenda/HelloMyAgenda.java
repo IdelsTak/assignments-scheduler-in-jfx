@@ -9,10 +9,8 @@ import com.github.idelstak.schedulerfx.data.WorkerProvider;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -59,23 +57,17 @@ public class HelloMyAgenda extends Application {
     vbox.getChildren().add(hbox);
 
     resetButton.setOnAction(
-        new EventHandler<ActionEvent>() {
-          @Override
-          public void handle(ActionEvent arg0) {
-            timetable.getAssignments().clear();
-            agenda.refresh();
-          }
+        (ActionEvent arg0) -> {
+          timetable.getAssignments().clear();
+          agenda.refresh();
         });
 
     deleteButton.setOnAction(
-        new EventHandler<ActionEvent>() {
-          @Override
-          public void handle(ActionEvent arg0) {
-            Assignment assignment = agenda.getSelectedAssignment();
-            if (assignment != null) {
-              timetable.getAssignments().remove(assignment);
-              agenda.refresh();
-            }
+        (ActionEvent arg0) -> {
+          Assignment assignment = agenda.getSelectedAssignment();
+          if (assignment != null) {
+            timetable.getAssignments().remove(assignment);
+            agenda.refresh();
           }
         });
 
@@ -88,38 +80,30 @@ public class HelloMyAgenda extends Application {
   }
 
   private ComboBox<Worker> createWorkersComboBox() {
-    ComboBox<Worker> comboBox = new ComboBox<Worker>();
+    ComboBox<Worker> comboBox = new ComboBox<>();
     comboBox.getItems().addAll(workers.getAll());
     comboBox.setValue(comboBox.getItems().get(0));
 
     comboBox
         .valueProperty()
         .addListener(
-            new ChangeListener<Worker>() {
-              @Override
-              public void changed(
-                  ObservableValue<? extends Worker> arg0, Worker old, Worker worker) {
-                agenda.setWorkerInCreation(worker);
-              }
+            (ObservableValue<? extends Worker> arg0, Worker old, Worker worker) -> {
+              agenda.setWorkerInCreation(worker);
             });
 
     return comboBox;
   }
 
   private ComboBox<Activity> createActivitiesComboBox() {
-    ComboBox<Activity> comboBox = new ComboBox<Activity>();
+    ComboBox<Activity> comboBox = new ComboBox<>();
     comboBox.getItems().addAll(activities.getAll());
     comboBox.setValue(comboBox.getItems().get(0));
 
     comboBox
         .valueProperty()
         .addListener(
-            new ChangeListener<Activity>() {
-              @Override
-              public void changed(
-                  ObservableValue<? extends Activity> arg0, Activity old, Activity newValue) {
-                agenda.setActivityInCreation(newValue);
-              }
+            (ObservableValue<? extends Activity> arg0, Activity old, Activity newValue) -> {
+              agenda.setActivityInCreation(newValue);
             });
 
     return comboBox;
@@ -141,12 +125,9 @@ public class HelloMyAgenda extends Application {
 
     tg.selectedToggleProperty()
         .addListener(
-            new ChangeListener<Toggle>() {
-              public void changed(
-                  ObservableValue<? extends Toggle> ov, Toggle old, Toggle newToggle) {
-                agenda.setFilter(((WorkerFilter) newToggle.getUserData()));
-                agenda.refresh();
-              }
+            (ObservableValue<? extends Toggle> ov, Toggle old, Toggle newToggle) -> {
+              agenda.setFilter(((WorkerFilter) newToggle.getUserData()));
+              agenda.refresh();
             });
 
     return radioButtons;
