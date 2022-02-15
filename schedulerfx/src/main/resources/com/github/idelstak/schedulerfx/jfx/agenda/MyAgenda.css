@@ -1,0 +1,3 @@
+.MyAgenda {
+    -fx-skin: "com.github.idelstak.schedulerfx.jfx.agenda.MyAgendaSkin";
+}
